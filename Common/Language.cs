@@ -14,8 +14,10 @@
         public const string Choose = "Lựa chọn";
         public const string cancel = "Hủy bỏ";
         public const string confirm = "Xác nhận";
-        public const string show = "Sử dụng";
-        public const string hide = "Nháp";
+        public const string show = "Hiển thị";
+        public const string hide = "Ẩn";
+        public const string use = "Sử dụng";
+        public const string noUse = "Không sử dụng";
         public const string active = "Kích hoạt";
         public const string deactive = "Không kích hoạt";
         public const string locked = "Khóa";
