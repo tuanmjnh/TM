@@ -18,6 +18,9 @@ namespace Common
         public const string orther = Uploads + "Orther\\";
         public const string ccbs = data + "ccbs\\";
         public const string DBBak = Uploads + "DBBak\\";
+        public const string CA = document + "CA\\";
+        public const string IVAN = document + "IVAN\\";
+        public const string KTR = document + "KTR\\";
     }
 }
 namespace Common.Objects

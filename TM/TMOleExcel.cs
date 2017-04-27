@@ -496,7 +496,7 @@ namespace TM
         public static string GetConnectionString(string DataSource, bool isXlSX)
         {
             System.Collections.Generic.Dictionary<string, string> props = new System.Collections.Generic.Dictionary<string, string>();
-            if (isXlSX)
+            if (DataSource.IsExtension(".xlsx"))
             {
                 // XLSX - Excel 2007, 2010, 2012, 2013
                 props["Provider"] = "Microsoft.ACE.OLEDB.12.0";
@@ -511,6 +511,21 @@ namespace TM
                 props["Extended Properties"] = "Excel 8.0";
                 props["Data Source"] = DataSource;
             }
+            //if (isXlSX)
+            //{
+            //    // XLSX - Excel 2007, 2010, 2012, 2013
+            //    props["Provider"] = "Microsoft.ACE.OLEDB.12.0";
+            //    props["Extended Properties"] = "Excel 12.0 XML";
+            //    props["Data Source"] = DataSource;
+            //    //"Mode=ReadWrite;Extended Properties=\"Excel 12.0;HDR=Yes;IMEX=1;\""
+            //}
+            //else
+            //{
+            //    // XLS - Excel 2003 and Older
+            //    props["Provider"] = "Microsoft.Jet.OLEDB.4.0";
+            //    props["Extended Properties"] = "Excel 8.0";
+            //    props["Data Source"] = DataSource;
+            //}
 
             StringBuilder sb = new StringBuilder();
 
@@ -786,8 +801,8 @@ namespace TM
                     return ToDataTable(con, cmd);
                 }
             }
-            catch (Exception) { throw; }
-            finally { }
+            catch (Exception) {  throw; }
+            finally { ConnectionClose(); }
         }
         public static System.Data.DataTable ToDataTable(string DataSource, OleDbCommand cmd)
         {
@@ -816,8 +831,8 @@ namespace TM
                 }
                 //}
             }
-            catch (Exception) { throw; }
-            finally { }
+            catch (Exception) {  throw; }
+            finally { ConnectionClose(); }
         }
         public static System.Data.DataTable ToDataTable(string DataSource, bool isXlSX, string sql)
         {

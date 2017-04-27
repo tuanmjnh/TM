@@ -398,7 +398,11 @@ namespace TM.IO
             //return rs;
             return System.Drawing.Imaging.ImageCodecInfo.GetImageEncoders().Select(codec => codec.FilenameExtension).ToList();
         }
-        private void CompressFolder(string path, ICSharpCode.SharpZipLib.Zip.ZipOutputStream zipStream, int folderOffset)
+
+    }
+    public class Zip
+    {
+        public static void CompressFolder(string path, ICSharpCode.SharpZipLib.Zip.ZipOutputStream zipStream, int folderOffset)
         {
 
             string[] files = Directory.GetFiles(path);
@@ -441,7 +445,7 @@ namespace TM.IO
                 CompressFolder(folder, zipStream, folderOffset);
             }
         }
-        public void CreateSample(string outPathname, string password, string folderName)
+        public static void CreateSample(string outPathname, string password, string folderName)
         {
 
             FileStream fsOut = File.Create(outPathname);
@@ -461,7 +465,7 @@ namespace TM.IO
             zipStream.IsStreamOwner = true; // Makes the Close also Close the underlying stream
             zipStream.Close();
         }
-        public MemoryStream CreateToMemoryStream(MemoryStream memStreamIn, string zipEntryName)
+        public static MemoryStream CreateToMemoryStream(MemoryStream memStreamIn, string zipEntryName)
         {
 
             MemoryStream outputMemStream = new MemoryStream();
@@ -510,7 +514,7 @@ namespace TM.IO
             foreach (string fileName in zipFileList)
             {
 
-                Stream fs = File.OpenRead(MapPath(fileName));    // or any suitable inputstream
+                Stream fs = File.OpenRead(TM.IO.FileDirectory.MapPath(fileName));    // or any suitable inputstream
                 var entry = new ICSharpCode.SharpZipLib.Zip.ZipEntry(ICSharpCode.SharpZipLib.Zip.ZipEntry.CleanName(fileName));
                 entry.Size = fs.Length;
                 // Setting the Size provides WinXP built-in extractor compatibility,
@@ -536,6 +540,88 @@ namespace TM.IO
             System.Web.HttpContext.Current.Response.Flush();
             System.Web.HttpContext.Current.Response.End();
         }
+        public static MemoryStream CopyStream(Stream input)
+        {
+            var output = new MemoryStream();
+            byte[] buffer = new byte[16 * 1024];
+            int read;
+            while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                output.Write(buffer, 0, read);
+            }
+            return output;
+        }
+        //
+        public static byte[] Compress(byte[] data, string fileName)
+        {
+            // Compress
+            using (MemoryStream fsOut = new MemoryStream())
+            {
+                using (ICSharpCode.SharpZipLib.Zip.ZipOutputStream zipStream = new ICSharpCode.SharpZipLib.Zip.ZipOutputStream(fsOut))
+                {
+                    zipStream.SetLevel(3);
+                    ICSharpCode.SharpZipLib.Zip.ZipEntry newEntry = new ICSharpCode.SharpZipLib.Zip.ZipEntry(fileName);
+                    newEntry.DateTime = DateTime.UtcNow;
+                    newEntry.Size = data.Length;
+                    zipStream.PutNextEntry(newEntry);
+                    zipStream.Write(data, 0, data.Length);
+                    zipStream.Finish();
+                    zipStream.Close();
+                }
+                return fsOut.ToArray();
+            }
+        }
+        public static void Compress(Stream data, Stream outData, string fileName)
+        {
+            string str = "";
+            try
+            {
+                using (ICSharpCode.SharpZipLib.Zip.ZipOutputStream zipStream = new ICSharpCode.SharpZipLib.Zip.ZipOutputStream(outData))
+                {
+                    zipStream.SetLevel(3);
+                    ICSharpCode.SharpZipLib.Zip.ZipEntry newEntry = new ICSharpCode.SharpZipLib.Zip.ZipEntry(fileName);
+                    newEntry.DateTime = DateTime.UtcNow;
+                    zipStream.PutNextEntry(newEntry);
+                    data.Position = 0;
+                    int size = (data.CanSeek) ? Math.Min((int)(data.Length - data.Position), 0x2000) : 0x2000;
+                    byte[] buffer = new byte[size];
+                    int n;
+                    do
+                    {
+                        n = data.Read(buffer, 0, buffer.Length);
+                        zipStream.Write(buffer, 0, n);
+                    } while (n != 0);
+                    zipStream.CloseEntry();
+                    zipStream.Flush();
+                    zipStream.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                str = ex.Message;
+            }
+
+        }
+        public static void Compress2(Stream data, Stream outData, string fileName)
+        {
+            string str = "";
+            try
+            {
+                using (ICSharpCode.SharpZipLib.Zip.ZipOutputStream zipStream = new ICSharpCode.SharpZipLib.Zip.ZipOutputStream(outData))
+                {
+                    zipStream.SetLevel(3);
+                    ICSharpCode.SharpZipLib.Zip.ZipEntry newEntry = new ICSharpCode.SharpZipLib.Zip.ZipEntry(fileName);
+                    newEntry.DateTime = DateTime.UtcNow;
+                    zipStream.PutNextEntry(newEntry);
+                    data.CopyTo(zipStream);
+                }
+            }
+            catch (Exception ex)
+            {
+                str = ex.Message;
+            }
+
+        }
     }
 }
 public static class IOS
@@ -556,7 +642,7 @@ public static class IOS
     {
         try
         {
-            if (file.ToExtension().ToLower() == (Extension[0] == '.' ? Extension.ToLower() : "." + Extension.ToLower()))
+            if (file.ToExtension().ToLower() == (Extension[0].ToString() == "." ? Extension.ToLower() : "." + Extension.ToLower()))
                 return true;
             else return false;
         }

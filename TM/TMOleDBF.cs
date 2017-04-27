@@ -97,7 +97,7 @@ namespace TM
                 }
             }
             catch (Exception) { throw; }
-            finally { }
+            finally { ConnectionClose(); }
         }
         public OleDbCommand getCommand(string DataSource, string query)
         {
@@ -121,7 +121,7 @@ namespace TM
                 }
             }
             catch (Exception) { throw; }
-            finally { }
+            finally { ConnectionClose(); }
         }
         public static bool Execute(string DataSource, OleDbCommand cmd)
         {
@@ -148,7 +148,7 @@ namespace TM
                 }
             }
             catch (Exception ex) { throw new Exception(extraEX + ex.Message); }
-            finally { }
+            finally { ConnectionClose(); }
         }
         public static bool Execute(string DataSource, string sql, string extraEX)
         {
@@ -178,7 +178,7 @@ namespace TM
                 }
             }
             catch (Exception) { throw; }
-            finally { }
+            finally { ConnectionClose(); }
         }
         public static OleDbDataReader ToDataReader(string DataSource, OleDbCommand cmd)
         {
@@ -210,7 +210,7 @@ namespace TM
                 //}
             }
             catch (Exception) { throw; }
-            finally { }
+            finally { ConnectionClose(); }
         }
         public static OleDbDataReader ToDataReader(string DataSource, string sql)
         {
@@ -244,7 +244,7 @@ namespace TM
                 //}
             }
             catch (Exception) { throw; }
-            finally { }
+            finally { ConnectionClose(); }
         }
         public static System.Data.DataTable ToDataTable(string DataSource, string version, OleDbCommand cmd)
         {
@@ -268,7 +268,7 @@ namespace TM
                 }
             }
             catch (Exception) { throw; }
-            finally { }
+            finally { ConnectionClose(); }
         }
         public static System.Data.DataTable ToDataTable(string DataSource, OleDbCommand cmd)
         {
@@ -299,7 +299,7 @@ namespace TM
                 }
             }
             catch (Exception ex) { throw new Exception(extraEX + ex.Message); }
-            finally { }
+            finally { ConnectionClose(); }
         }
         public static System.Data.DataTable ToDataTable(string DataSource, string sql, string extraEX)
         {
@@ -313,43 +313,75 @@ namespace TM
         {
             return ToDataTable(DataSource, "0", sql, null);
         }
-        public static void ExportDBF(string DataSource, string filename, System.Data.DataTable dt)
+        public static System.Collections.ArrayList ExportDBF(string DataSource, string filename, System.Data.DataTable dt)
         {
-            try
+            var list = CreateTable(DataSource, filename, dt);
+            var listErr = new System.Collections.ArrayList();
+            var Err = "";
+            foreach (System.Data.DataRow row in dt.Rows)
             {
-                System.Collections.ArrayList list = CreateTable(DataSource, filename, dt);
-                foreach (System.Data.DataRow row in dt.Rows)
+                try
                 {
+                    Err = "";
                     string sql = "insert into " + filename + " values(";
-                    for (int i = 0; i < list.Count; i++)
-                        sql += "'" + row[list[i].ToString()].ToString() + "',";
-                    sql = sql.Substring(0, sql.Length - 1) + ")";
-                    Execute(DataSource, sql);
+                    foreach (System.Data.DataColumn dc in dt.Columns)
+                    {
+                        Err += row[dc.ColumnName].ToString();
+                        if (dc.DataType.ToString() == "System.Int32" || dc.DataType.ToString() == "System.Double")
+                            sql += row[dc.ColumnName].ToString() + ",";
+                        else
+                            sql += "'" + row[dc.ColumnName].ToString() + "',";
+                    }
+                    //for (int i = 0; i < list.Count; i++)
+                    //    sql += "'" + row[list[i].ToString()].ToString() + "',";
+                    sql = sql.Trim(',') + ")";
+                    Execute(sql);
+                }
+                catch (Exception)
+                {
+                    listErr.Add(Err);
                 }
             }
-            catch (Exception) { throw; }
+            return listErr;
+        }
+        public static System.Collections.ArrayList ExportDBF2(string DataSource, string filename, System.Data.DataTable dt)
+        {
+            var listErr = new System.Collections.ArrayList();
+            var Err = "";
+            foreach (System.Data.DataRow row in dt.Rows)
+            {
+                try
+                {
+                    Err = "";
+                    string sql = "insert into " + filename + " values(";
+                    foreach (System.Data.DataColumn dc in dt.Columns)
+                    {
+                        Err += row[dc.ColumnName].ToString() + ",";
+                        sql += "'" + row[dc.ColumnName].ToString().Replace("\n", " ") + "',";
+                    }
+                    sql = sql.Trim(',') + ")";
+                    Execute(DataSource, sql, filename);
+                }
+                catch (Exception)
+                {
+                    listErr.Add(Err.Trim(','));
+                }
+            }
+            return listErr;
+        }
+        public static System.Collections.ArrayList ExportDBF2(string filename, System.Data.DataTable dt)
+        {
+            return ExportDBF2(DataSource, filename, dt);
         }
         public static void ExportDBF(string filename, System.Data.DataTable dt)
         {
-            try
-            {
-                System.Collections.ArrayList list = CreateTable(DataSource, filename, dt);
-                foreach (System.Data.DataRow row in dt.Rows)
-                {
-                    string sql = "insert into " + filename + " values(";
-                    for (int i = 0; i < list.Count; i++)
-                        sql += "'" + row[list[i].ToString()].ToString() + "',";
-                    sql = sql.Substring(0, sql.Length - 1) + ")";
-                    Execute(DataSource, sql);
-                }
-            }
-            catch (Exception) { throw; }
+            ExportDBF(DataSource, filename, dt);
         }
         public static System.Collections.ArrayList CreateTable(string DataSource, string filename, System.Data.DataTable dt)
         {
             try
             {
-                System.Collections.ArrayList list = new System.Collections.ArrayList();
+                var list = new System.Collections.ArrayList();
                 IO.FileDirectory.Delete(DataSource + filename);
                 string sql = "create table " + filename + " (";
                 foreach (System.Data.DataColumn dc in dt.Columns)
@@ -369,7 +401,7 @@ namespace TM
                             type = "int";
                             break;
                         case "System.Double":
-                            type = "Double";
+                            type = "f(11,2)";
                             break;
                         case "System.DateTime":
                             type = "TimeStamp";
@@ -382,52 +414,15 @@ namespace TM
                     list.Add(fieldName);
                 }
                 sql = sql.Substring(0, sql.Length - 1) + ")";
-                Execute(DataSource, sql);
+                TM.OleDBF.DataSource = DataSource;
+                Execute(sql);
                 return list;
             }
             catch (Exception) { throw; }
         }
         public static System.Collections.ArrayList CreateTable(string filename, System.Data.DataTable dt)
         {
-            try
-            {
-                System.Collections.ArrayList list = new System.Collections.ArrayList();
-                IO.FileDirectory.Delete(DataSource + filename);
-                string sql = "create table " + filename + " (";
-                foreach (System.Data.DataColumn dc in dt.Columns)
-                {
-                    string fieldName = dc.ColumnName;
-                    string type = dc.DataType.ToString();
-                    switch (type)
-                    {
-                        //case "System.String":
-                        //    type = "varchar(255)";
-                        //    break;
-                        //c(100)NOCPTRANS
-                        case "System.Boolean":
-                            type = "varchar(50)";
-                            break;
-                        case "System.Int32":
-                            type = "int";
-                            break;
-                        case "System.Double":
-                            type = "Double";
-                            break;
-                        case "System.DateTime":
-                            type = "TimeStamp";
-                            break;
-                        default:
-                            type = "c(100)";
-                            break;
-                    }
-                    sql += "[" + fieldName + "]" + " " + type + ",";
-                    list.Add(fieldName);
-                }
-                sql = sql.Substring(0, sql.Length - 1) + ")";
-                Execute(DataSource, sql);
-                return list;
-            }
-            catch (Exception) { throw; }
+            return CreateTable(DataSource, filename, dt);
         }
         public static void CreateTable(string DataSource, string filename, System.Collections.Generic.Dictionary<string, string> cols)
         {
@@ -437,8 +432,8 @@ namespace TM
                 string sql = "create table " + filename + " (";
                 foreach (var col in cols)
                     sql += "[" + col.Key + "]" + " " + col.Value + ",";
-                sql = sql.Substring(0, sql.Length - 1) + ")";
-                Execute(DataSource, sql);
+                sql = sql.Trim(',') + ")";
+                Execute(DataSource, sql, filename);
             }
             catch (Exception) { throw; }
         }
@@ -451,7 +446,7 @@ namespace TM
                 foreach (var col in cols)
                     sql += "[" + col.Key + "]" + " " + col.Value + ",";
                 sql = sql.Substring(0, sql.Length - 1) + ")";
-                Execute(DataSource, sql);
+                Execute(DataSource, sql, filename);
             }
             catch (Exception) { throw; }
         }

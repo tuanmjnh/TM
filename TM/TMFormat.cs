@@ -168,6 +168,14 @@ namespace TM.Format
         {
             return StringToDatetime(date, '/');
         }
+        public static DateTime StartOfDate(this DateTime date)
+        {
+            return new DateTime(date.Year, date.Month, date.Day, 0, 0, 0, 0);
+        }
+        public static DateTime EndOfDate(this DateTime date)
+        {
+            return new DateTime(date.Year, date.Month, date.Day, 23, 59, 59, 999);
+        }
     }
 }
 
