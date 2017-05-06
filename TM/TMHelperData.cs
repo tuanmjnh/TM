@@ -153,7 +153,7 @@ namespace TM.Helper
             }
             return list;
         }
-        public static List<T> ToList<T>(this DataTable table) where T : class, new()
+        public static List<T> ToList2<T>(this DataTable table) where T : class, new()
         {
             try
             {
@@ -176,7 +176,7 @@ namespace TM.Helper
             }
             catch { return null; }
         }
-        public static List<T> ToList2<T>(this DataTable dt)
+        public static List<T> ToList3<T>(this DataTable dt)
         {
             const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance;
             var columnNames = dt.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToList();
@@ -190,110 +190,6 @@ namespace TM.Helper
             }).ToList();
             return targetList;
         }
-        //public static IQueryable<T> searchDatetime<T>(this IQueryable<T> query, string datetime)
-        //{
-        //    var date = datetime.Split('-');
-        //    if (date.Length == 1)
-        //    {
-        //        var tmp = date[0].Split('/');
-        //        if (tmp.Length == 1)
-        //        {
-        //            query = query.Where(d =>
-        //            d.createdat.Value.Year == int.Parse(tmp[0]));
-        //        }
-        //        else if (tmp.Length == 2)
-        //        {
-        //            query = query.Where(d =>
-        //            d.createdat.Value.Month == int.Parse(tmp[0]) &&
-        //            d.createdat.Value.Year == int.Parse(tmp[1]));
-        //        }
-        //        else if (tmp.Length > 2)
-        //        {
-        //            query = query.Where(d =>
-        //            d.createdat.Value.Day == int.Parse(tmp[0]) &&
-        //            d.createdat.Value.Month == int.Parse(tmp[1]) &&
-        //            d.createdat.Value.Year == int.Parse(tmp[2]));
-        //        }
-        //    }
-        //    else if (date.Length > 1)
-        //    {
-        //        var tmp0 = date[0].Split('/');
-        //        var tmp1 = date[1].Split('/');
-        //        if (tmp0.Length == 1 && tmp1.Length == 1)
-        //        {
-        //            query = query.Where(d =>
-        //            d.createdat.Value.Year >= int.Parse(tmp0[0]) &&
-        //            d.createdat.Value.Year <= int.Parse(tmp1[0]));
-        //        }
-        //        else if (tmp0.Length == 1 && tmp1.Length == 2)
-        //        {
-        //            query = query.Where(d =>
-        //            d.createdat.Value.Year >= int.Parse(tmp0[0]) &&
-        //            d.createdat.Value.Month <= int.Parse(tmp1[0]) &&
-        //            d.createdat.Value.Year <= int.Parse(tmp1[1]));
-        //        }
-        //        else if (tmp0.Length == 1 && tmp1.Length > 2)
-        //        {
-        //            query = query.Where(d =>
-        //            d.createdat.Value.Year >= int.Parse(tmp0[0]) &&
-        //            d.createdat.Value.Day <= int.Parse(tmp1[0]) &&
-        //            d.createdat.Value.Month <= int.Parse(tmp1[1]) &&
-        //            d.createdat.Value.Year <= int.Parse(tmp1[2]));
-        //        }
-        //        else if (tmp0.Length == 2 && tmp1.Length == 1)
-        //        {
-        //            query = query.Where(d =>
-        //            d.createdat.Value.Month >= int.Parse(tmp0[0]) &&
-        //            d.createdat.Value.Year >= int.Parse(tmp0[1]) &&
-        //            d.createdat.Value.Year <= int.Parse(tmp1[0]));
-        //        }
-        //        else if (tmp0.Length == 2 && tmp1.Length == 2)
-        //        {
-        //            query = query.Where(d =>
-        //            d.createdat.Value.Month >= int.Parse(tmp0[0]) &&
-        //            d.createdat.Value.Year >= int.Parse(tmp0[1]) &&
-        //            d.createdat.Value.Month <= int.Parse(tmp1[0]) &&
-        //            d.createdat.Value.Year <= int.Parse(tmp1[1]));
-        //        }
-        //        else if (tmp0.Length == 2 && tmp1.Length > 2)
-        //        {
-        //            query = query.Where(d =>
-        //            d.createdat.Value.Month >= int.Parse(tmp0[0]) &&
-        //            d.createdat.Value.Year >= int.Parse(tmp0[1]) &&
-        //            d.createdat.Value.Day <= int.Parse(tmp1[0]) &&
-        //            d.createdat.Value.Month <= int.Parse(tmp1[1]) &&
-        //            d.createdat.Value.Year <= int.Parse(tmp1[2]));
-        //        }
-        //        else if (tmp0.Length > 2 && tmp1.Length == 1)
-        //        {
-        //            query = query.Where(d =>
-        //            d.createdat.Value.Day >= int.Parse(tmp0[0]) &&
-        //            d.createdat.Value.Month >= int.Parse(tmp0[1]) &&
-        //            d.createdat.Value.Year >= int.Parse(tmp0[2]) &&
-        //            d.createdat.Value.Year <= int.Parse(tmp1[0]));
-        //        }
-        //        else if (tmp0.Length > 2 && tmp1.Length == 2)
-        //        {
-        //            query = query.Where(d =>
-        //            d.createdat.Value.Day >= int.Parse(tmp0[0]) &&
-        //            d.createdat.Value.Month >= int.Parse(tmp0[1]) &&
-        //            d.createdat.Value.Year >= int.Parse(tmp0[2]) &&
-        //            d.createdat.Value.Month <= int.Parse(tmp1[0]) &&
-        //            d.createdat.Value.Year <= int.Parse(tmp1[1]));
-        //        }
-        //        else if (tmp0.Length > 2 && tmp1.Length > 2)
-        //        {
-        //            query = query.Where(d =>
-        //            d.createdat.Value.Day >= int.Parse(tmp0[0]) &&
-        //            d.createdat.Value.Month >= int.Parse(tmp0[1]) &&
-        //            d.createdat.Value.Year >= int.Parse(tmp0[2]) &&
-        //            d.createdat.Value.Day <= int.Parse(tmp1[0]) &&
-        //            d.createdat.Value.Month <= int.Parse(tmp1[1]) &&
-        //            d.createdat.Value.Year <= int.Parse(tmp1[2]));
-        //        }
-        //    }
-        //    return query;
-        //}
     }
     public static class Dictionary
     {
