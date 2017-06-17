@@ -165,15 +165,15 @@ namespace TM.IO
         }
         public static FileInfo ReExtensionToLower(string sourceFile, bool IsMapPath = true)
         {
+            sourceFile = IsMapPath ? MapPath(sourceFile) : sourceFile;
+            var file = new FileInfo(sourceFile);
             try
             {
-                sourceFile = IsMapPath ? MapPath(sourceFile) : sourceFile;
-                var file = new FileInfo(sourceFile);
                 var DestFile = sourceFile.Replace(file.Extension, file.Extension.ToLower());
                 File.Move(sourceFile, DestFile);
                 return new FileInfo(DestFile);
             }
-            catch (Exception) { return null; }
+            catch (Exception) { return file; }
         }
         public static bool Copy(string sourceFile, string DestFile, bool IsMapPath = true)
         {
@@ -494,6 +494,44 @@ namespace TM.IO
             // GetBuffer returns a raw buffer raw and so you need to account for the true length yourself.
             //byte[] byteArrayOut = outputMemStream.GetBuffer();
             long len = outputMemStream.Length;
+        }
+        public static void ZipFile(System.Collections.Generic.List<string> filesToZip, string outFile, int compression = 3, bool IsMapPath = true)
+        {
+            outFile = IsMapPath ? TM.IO.FileDirectory.MapPath(outFile) : outFile;
+            if (compression < 0 || compression > 9)
+                throw new ArgumentException("Invalid compression rate (just 0-9).");
+
+            if (!Directory.Exists(new FileInfo(outFile).Directory.ToString()))
+                throw new ArgumentException("The Path does not exist.");
+
+            foreach (string c in filesToZip)
+                if (!File.Exists(IsMapPath ? TM.IO.FileDirectory.MapPath(c) : c))
+                    throw new ArgumentException(string.Format("The File {0} does not exist!", c));
+
+            var crc32 = new ICSharpCode.SharpZipLib.Checksums.Crc32();
+            var stream = new ICSharpCode.SharpZipLib.Zip.ZipOutputStream(File.Create(outFile));
+            stream.SetLevel(compression);
+
+            for (int i = 0; i < filesToZip.Count; i++)
+            {
+                var entry = new ICSharpCode.SharpZipLib.Zip.ZipEntry(Path.GetFileName(filesToZip[i]));
+                entry.DateTime = DateTime.Now;
+                var _filesToZip = IsMapPath ? TM.IO.FileDirectory.MapPath(filesToZip[i]) : filesToZip[i];
+                using (FileStream fs = File.OpenRead(_filesToZip))
+                {
+                    byte[] buffer = new byte[fs.Length];
+                    fs.Read(buffer, 0, buffer.Length);
+                    entry.Size = fs.Length;
+                    fs.Close();
+                    crc32.Reset();
+                    crc32.Update(buffer);
+                    entry.Crc = crc32.Value;
+                    stream.PutNextEntry(entry);
+                    stream.Write(buffer, 0, buffer.Length);
+                }
+            }
+            stream.Finish();
+            stream.Close();
         }
         public static void DownloadZipToBrowser(System.Collections.Generic.List<string> zipFileList)
         {

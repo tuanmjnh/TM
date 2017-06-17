@@ -21,6 +21,7 @@ namespace Common
         public const string CA = document + "CA\\";
         public const string IVAN = document + "IVAN\\";
         public const string KTR = document + "KTR\\";
+        public const string TraSauReport = data + "Report\\";
     }
 }
 namespace Common.Objects
