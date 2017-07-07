@@ -188,6 +188,7 @@ namespace Common
         public const string admin = "ee82e7f1-592c-4f5c-95fa-7cad30b14a2d";
         public const string mod = "238391cd-990d-4f3b-8d0c-0300416f9263";
         public const string director = "121ab8e5-1ad2-4b78-8ff2-4d953c9b71a8";
+        public const string manager = "3a32dc87-eb43-45f0-9bea-fb9030afeaf0";
         public const string leader = "d0443498-09c4-4267-a7c9-2a20dde8e925";
         public const string staff = "dc67601d-ad74-4813-8293-8d4a07db1d31";
     }

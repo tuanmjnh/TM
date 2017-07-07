@@ -28,7 +28,7 @@ namespace TM
         {
             ExportExcel(data, "ExportExcelData", cols);
         }
-        public System.Data.DataTable ToDataTable(System.Data.Linq.DataContext ctx, object query)
+        public static System.Data.DataTable ToDataTable(System.Data.Linq.DataContext ctx, object query)
         {
             if (query == null)
             {
