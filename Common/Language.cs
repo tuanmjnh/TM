@@ -1,4 +1,4 @@
-﻿namespace Common
+﻿namespace TM.Common
 {
     public class Language
     {

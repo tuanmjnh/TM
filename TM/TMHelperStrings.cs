@@ -133,6 +133,12 @@ namespace TM.Helper
             return ArrayToString(str, ",");
         }
 
+        public static string[] StringToArray(this string str, char ch = ',', bool trim = true)
+        {
+            if (trim) str = str.Trim(ch);
+            var rs = str.Split(ch);
+            return rs;
+        }
         public static bool Contains(this string[] str, string chars)
         {
             for (int i = 0; i < str.Length; i++)
@@ -218,41 +224,16 @@ namespace TM.Helper
         {
             return CutLast(s, 1);
         }
-        public static string ToTag(this object s)
+        public static string ToTag(this string s, string fix = ", ", char ch = ',', bool trim = true)
         {
             try
             {
-                string[] v = s.ToString().Split(',');
-                s = "";
-                for (int i = 0; i < v.Length; i++)
-                    s += v[i].Trim() + ", ";
-                return s.ToString().Substring(0, s.ToString().Length - 2);
+                var rs = "";
+                foreach (var item in s.StringToArray(ch, trim))
+                    rs += item + fix;
+                return rs.Substring(0, rs.Length - fix.Length);
             }
-            catch (Exception) { return ""; }
-        }
-        public static string ToTag(this string s)
-        {
-            try
-            {
-                string[] v = s.Split(',');
-                s = "";
-                for (int i = 0; i < v.Length; i++)
-                    s += v[i].Trim() + ", ";
-                return s.Substring(0, s.Length - 2);
-            }
-            catch (Exception) { return ""; }
-        }
-        public static string ToTag2(this string s)
-        {
-            try
-            {
-                string[] v = s.CutFirstLast().Split(',');
-                s = "";
-                for (int i = 0; i < v.Length; i++)
-                    s += v[i].Trim() + ", ";
-                return s.Substring(0, s.Length - 2);
-            }
-            catch (Exception) { return ""; }
+            catch (Exception) { return s; }
         }
         public static string[] ToTagList(this string s)
         {

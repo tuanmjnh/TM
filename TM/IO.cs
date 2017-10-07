@@ -373,19 +373,28 @@ namespace TM.IO
             }
             catch (Exception) { return null; }
         }
-        public static string[] ReadFile(string filename)
+        public static string[] ReadFile(string filename, bool IsMapPath = true)
         {
-
-            var file = MapPath(filename);
-            var list = System.IO.File.ReadAllLines(file);
+            filename = IsMapPath ? MapPath(filename) : filename;
+            var list = System.IO.File.ReadAllLines(filename);
             return list;
         }
-        public static System.Collections.Generic.List<string[]> ReadFile(string filename, char split)
+        public static System.Collections.Generic.List<string[]> ReadFile(string filename, char split, bool IsMapPath = true)
         {
             var rs = new System.Collections.Generic.List<string[]>();
-            foreach (var item in ReadFile(filename))
+            foreach (var item in ReadFile(filename, IsMapPath))
             {
-                var tmp = item.Split(split);
+                var tmp = item.Trim().Split(split);
+                rs.Add(tmp);
+            }
+            return rs;
+        }
+        public static System.Collections.Generic.List<string[]> ReadFile(string filename, string split, bool IsMapPath = true)
+        {
+            var rs = new System.Collections.Generic.List<string[]>();
+            foreach (var item in ReadFile(filename, IsMapPath))
+            {
+                var tmp = item.Trim().Replace(split, "\t").Split('\t');
                 rs.Add(tmp);
             }
             return rs;

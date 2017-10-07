@@ -1,4 +1,4 @@
-﻿namespace Common.Config
+﻿namespace TM.Common.Config
 {
     public class main
     {

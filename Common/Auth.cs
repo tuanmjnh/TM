@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-namespace Common
+namespace TM.Common
 {
     public class Auth
     {

@@ -3,6 +3,8 @@ using System.Data;
 using System.Data.Sql;
 using System.Data.SqlClient;
 using System.Linq;
+using Oracle.ManagedDataAccess.Client;
+//using System.Data.OracleClient;
 
 namespace TM.SQL
 {
@@ -521,7 +523,7 @@ namespace TM.SQL
         }
         public DB()
         {
-            
+
         }
         public SqlConnection Connection()
         {
@@ -1106,5 +1108,66 @@ namespace TM.SQLServer
             string filename = string.Format("{0}-{1}.bak", databaseName, DateTime.Now.ToString("yyyy-MM-dd"));
             return System.IO.Path.Combine(_path, filename);
         }
+    }
+}
+namespace TM.DataAcess
+{
+    public class Oracle
+    {
+        private string _UserId, _Password, _DataSource, _Host, _Port, _Service_Name;
+        public Oracle() { }
+        public static OracleConnection OracleConnection(ConnectionInf conInf)
+        {
+            string _con = $"User Id={conInf.UserId};Password={conInf.Password};Data Source={conInf.DataSource};";
+            OracleConnection conn = new OracleConnection(_con);  // C#
+            if (conn.State == ConnectionState.Open) conn.Close();
+            conn.Open();
+            return conn;
+        }
+        public static OracleConnection OracleConnection(ConnectionServerInf conSVInf)
+        {
+            string _con = $"User Id={conSVInf.UserId};Password={conSVInf.Password};Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={conSVInf.Host})(PORT={conSVInf.Port}))(CONNECT_DATA=(SERVICE_NAME={conSVInf.Service_Name})));";
+            OracleConnection conn = new OracleConnection(_con);  // C#
+            if (conn.State == ConnectionState.Open) conn.Close();
+            conn.Open();
+            return conn;
+        }
+        public Oracle(ConnectionInf conInf)
+        {
+            _UserId = conInf.UserId;
+            _Password = conInf.Password;
+            _DataSource = conInf.DataSource;
+        }
+        public Oracle(ConnectionServerInf conInf)
+        {
+            _UserId = conInf.UserId;
+            _Password = conInf.Password;
+            _Host = conInf.Host;
+            _Port = conInf.Port;
+            _Service_Name = conInf.Service_Name;
+        }
+        public OracleConnection OracleConnection(bool server = false)
+        {
+            string _con = !server ?
+                $"User Id={_UserId};Password={_Password};Data Source={_DataSource};" :
+                $"User Id={_UserId};Password={_Password};Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={_Host})(PORT={_Port}))(CONNECT_DATA=(SERVICE_NAME={_Service_Name})));";
+            OracleConnection conn = new OracleConnection(_con);  // C#
+            conn.Open();
+            return conn;
+        }
+    }
+    public class ConnectionInf
+    {
+        public string UserId { get; set; }
+        public string Password { get; set; }
+        public string DataSource { get; set; }
+    }
+    public class ConnectionServerInf
+    {
+        public string UserId { get; set; }
+        public string Password { get; set; }
+        public string Host { get; set; }
+        public string Port { get; set; }
+        public string Service_Name { get; set; }
     }
 }

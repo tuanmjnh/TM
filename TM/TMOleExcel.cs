@@ -493,7 +493,7 @@ namespace TM
     public class OleExcel
     {
         public static string DataSource { get; set; }
-        public static string GetConnectionString(string DataSource, bool isXlSX)
+        public static string GetConnectionString(string DataSource)
         {
             System.Collections.Generic.Dictionary<string, string> props = new System.Collections.Generic.Dictionary<string, string>();
             if (DataSource.IsExtension(".xlsx"))
@@ -539,21 +539,17 @@ namespace TM
 
             return sb.ToString();
         }
-        public static string GetConnectionString(string DataSource)
-        {
-            return GetConnectionString(DataSource, true);
-        }
         public static string GetConnectionString()
         {
-            return GetConnectionString(DataSource, true);
+            return GetConnectionString(DataSource);
         }
-        public static OleDbConnection Connection(string DataSource, bool isXlSX)
+        public static OleDbConnection Connection(string DataSource)
         {
             try
             {
                 //using (OleDbConnection con = new OleDbConnection(GetConnectionString(DataSource, isXlSX)))
                 //{
-                OleDbConnection con = new OleDbConnection(GetConnectionString(DataSource, isXlSX));
+                OleDbConnection con = new OleDbConnection(GetConnectionString(DataSource));
                 if (con.State == System.Data.ConnectionState.Open) con.Close();
                 con.Open();
                 return con;
@@ -561,53 +557,57 @@ namespace TM
             }
             catch (Exception) { throw; }
         }
-        public static OleDbConnection Connection(string DataSource)
-        {
-            return Connection(DataSource, true);
-        }
         public static OleDbConnection Connection()
         {
-            return Connection(DataSource, true);
+            return Connection(DataSource);
         }
-        public static void ConnectionOpen(string DataSource, bool isXlSX)
+        public static void ConnectionOpen(OleDbConnection con)
         {
             try
             {
-                if (Connection(DataSource, isXlSX) != null && Connection(DataSource, isXlSX).State == System.Data.ConnectionState.Closed) Connection(DataSource, isXlSX).Open();
+                if (con.State == System.Data.ConnectionState.Closed) con.Open();
             }
             catch (Exception) { throw; }
         }
         public static void ConnectionOpen(string DataSource)
         {
-            ConnectionOpen(DataSource, true);
+            try
+            {
+                if (Connection(DataSource) != null && Connection(DataSource).State == System.Data.ConnectionState.Closed) Connection(DataSource).Open();
+            }
+            catch (Exception) { throw; }
         }
         public static void ConnectionOpen()
         {
-            ConnectionOpen(DataSource, true);
+            ConnectionOpen(DataSource);
         }
-        public static void ConnectionClose(string DataSource, bool isXlSX)
+        public static void ConnectionClose(OleDbConnection con)
         {
             try
             {
-                if (Connection(DataSource, isXlSX) != null && Connection(DataSource, isXlSX).State == System.Data.ConnectionState.Open) { Connection(DataSource, isXlSX).Close(); }//Connection().Dispose(); } }
+                if (con.State == System.Data.ConnectionState.Open) { con.Close(); }//Connection().Dispose(); } }
             }
             catch (Exception) { throw; }
         }
         public static void ConnectionClose(string DataSource)
         {
-            ConnectionClose(DataSource, true);
+            try
+            {
+                if (Connection(DataSource) != null && Connection(DataSource).State == System.Data.ConnectionState.Open) { Connection(DataSource).Close(); }//Connection().Dispose(); } }
+            }
+            catch (Exception) { throw; }
         }
         public static void ConnectionClose()
         {
-            ConnectionClose(DataSource, true);
+            ConnectionClose(DataSource);
         }
-        public OleDbCommand ToCommand(string DataSource, bool isXlSX, string query)
+        public OleDbCommand ToCommand(string DataSource, string query)
         {
             try
             {
                 //ClearCache();
                 //Connection().Open();
-                using (OleDbConnection con = Connection(DataSource, isXlSX))
+                using (OleDbConnection con = Connection(DataSource))
                 {
                     using (OleDbCommand cmd = new OleDbCommand(query))
                     {
@@ -619,13 +619,9 @@ namespace TM
             catch (Exception) { throw; }
             finally { }
         }
-        public OleDbCommand ToCommand(string DataSource, string query)
-        {
-            return ToCommand(DataSource, true, query);
-        }
         public OleDbCommand ToCommand(string query)
         {
-            return ToCommand(DataSource, true, query);
+            return ToCommand(DataSource, query);
         }
         public static bool Execute(OleDbConnection con, OleDbCommand cmd)
         {
@@ -643,22 +639,18 @@ namespace TM
             catch (Exception) { return false; }
             finally { }
         }
-        public static bool Execute(string DataSource, bool isXlSX, OleDbCommand cmd)
+        public static bool Execute(string DataSource, OleDbCommand cmd)
         {
             //ClearCache();
             //Connection().Open();
-            using (OleDbConnection con = Connection(DataSource, isXlSX))
+            using (OleDbConnection con = Connection(DataSource))
             {
                 return Execute(con, cmd);
             }
         }
-        public static bool Execute(string DataSource, OleDbCommand cmd)
-        {
-            return Execute(DataSource, true, cmd);
-        }
         public static bool Execute(OleDbCommand cmd)
         {
-            return Execute(DataSource, true, cmd);
+            return Execute(DataSource, cmd);
         }
         public static bool Execute(OleDbConnection con, string sql)
         {
@@ -678,9 +670,9 @@ namespace TM
             catch (Exception ex) { throw new Exception(ex.Message); }
             finally { }
         }
-        public static bool Execute(string DataSource, bool isXlSX, string sql)
+        public static bool Execute(string DataSource, string sql)
         {
-            using (OleDbConnection con = Connection(DataSource, isXlSX))
+            using (OleDbConnection con = Connection(DataSource))
             {
                 return Execute(con, sql);
             }
@@ -703,13 +695,9 @@ namespace TM
         //    catch (Exception) { return false; }
         //    finally { }
         //}
-        public static bool Execute(string DataSource, string sql)
-        {
-            return Execute(DataSource, true, sql);
-        }
         public static bool Execute(string sql)
         {
-            return Execute(DataSource, true, sql);
+            return Execute(DataSource, sql);
         }
         public static OleDbDataReader ToDataReader(string DataSource, bool isXlSX, OleDbCommand cmd)
         {
@@ -717,7 +705,7 @@ namespace TM
             {
                 //ClearCache();
                 //Connection().Open();
-                using (OleDbConnection con = Connection(DataSource, isXlSX))
+                using (OleDbConnection con = Connection(DataSource))
                 {
                     cmd.Connection = con;
                     using (OleDbDataReader datareader = cmd.ExecuteReader())
@@ -737,12 +725,12 @@ namespace TM
         {
             return ToDataReader(DataSource, true, cmd);
         }
-        public static OleDbDataReader ToDataReader(string DataSource, bool isXlSX, string sql)
+        public static OleDbDataReader ToDataReader(string DataSource, string sql)
         {
             try
             {
                 //ClearCache();
-                using (OleDbConnection con = Connection(DataSource, isXlSX))
+                using (OleDbConnection con = Connection(DataSource))
                 {
                     using (OleDbCommand cmd = new OleDbCommand(sql, con))
                     {
@@ -758,13 +746,9 @@ namespace TM
             catch (Exception) { return null; }
             finally { }
         }
-        public static OleDbDataReader ToDataReader(string DataSource, string sql)
-        {
-            return ToDataReader(DataSource, true, sql);
-        }
         public static OleDbDataReader ToDataReader(string sql)
         {
-            return ToDataReader(DataSource, true, sql);
+            return ToDataReader(DataSource, sql);
         }
         public static System.Data.DataTable ToDataTable(OleDbConnection con, OleDbCommand cmd)
         {
@@ -788,30 +772,27 @@ namespace TM
                 //}
             }
             catch (Exception) { throw; }
-            finally { }
+            finally { ConnectionClose(con); }
         }
-        public static System.Data.DataTable ToDataTable(string DataSource, bool isXlSX, OleDbCommand cmd)
+        public static System.Data.DataTable ToDataTable(string DataSource, OleDbCommand cmd)
         {
             try
             {
                 //ClearCache();
                 //Connection().Open();
-                using (OleDbConnection con = Connection(DataSource, isXlSX))
+                using (OleDbConnection con = Connection(DataSource))
                 {
                     return ToDataTable(con, cmd);
                 }
             }
             catch (Exception) {  throw; }
-            finally { ConnectionClose(); }
-        }
-        public static System.Data.DataTable ToDataTable(string DataSource, OleDbCommand cmd)
-        {
-            return ToDataTable(DataSource, true, cmd);
+            finally { }
         }
         public static System.Data.DataTable ToDataTable(OleDbCommand cmd)
         {
-            return ToDataTable(DataSource, true, cmd);
+            return ToDataTable(DataSource, cmd);
         }
+
         public static System.Data.DataTable ToDataTable(OleDbConnection con, string sql)
         {
             try
@@ -832,13 +813,13 @@ namespace TM
                 //}
             }
             catch (Exception) {  throw; }
-            finally { ConnectionClose(); }
+            finally { ConnectionClose(con); }
         }
-        public static System.Data.DataTable ToDataTable(string DataSource, bool isXlSX, string sql)
+        public static System.Data.DataTable ToDataTable(string DataSource, string sql)
         {
             try
             {
-                using (OleDbConnection con = Connection(DataSource, isXlSX))
+                using (OleDbConnection con = Connection(DataSource))
                 {
                     return ToDataTable(con, sql);
                 }
@@ -846,28 +827,24 @@ namespace TM
             catch (Exception) { throw; }
             finally { }
         }
-        public static System.Data.DataTable ToDataTable(string DataSource, string sql)
-        {
-            return ToDataTable(DataSource, true, sql);
-        }
         public static System.Data.DataTable ToDataTable(string sql)
         {
-            return ToDataTable(DataSource, true, sql);
+            return ToDataTable(DataSource, sql);
         }
-        public static System.Data.DataSet ToDataSet(string DataSource, bool isXlSX)
+        public static System.Data.DataSet ToDataSet(string DataSource)
         {
             try
             {
                 using (System.Data.DataSet ds = new System.Data.DataSet())
                 {
                     // Get all Sheets in Excel File
-                    foreach (System.Data.DataRow dr in GetSchemaTable(DataSource, isXlSX).Rows)
+                    foreach (System.Data.DataRow dr in GetSchemaTable(DataSource).Rows)
                     {
                         string sheetName = dr["TABLE_NAME"].ToString();
                         if (!sheetName.EndsWith("$"))
                             continue;
                         // Get all rows from the Sheet
-                        ds.Tables.Add(ToDataTable(DataSource, isXlSX, "SELECT * FROM [" + sheetName + "]"));
+                        ds.Tables.Add(ToDataTable(DataSource, "SELECT * FROM [" + sheetName + "]"));
                     }
                     return ds;
                 }
@@ -875,112 +852,80 @@ namespace TM
             catch (Exception) { throw; }
             finally { }
         }
-        public static System.Data.DataSet ToDataSet(string DataSource)
-        {
-            return ToDataSet(DataSource, true);
-        }
         public static System.Data.DataSet ToDataSet()
         {
-            return ToDataSet(DataSource, true);
-        }
-        public static System.Data.DataTable Select(string DataSource, bool isXlSX, string table, string where)
-        {
-            return ToDataTable(DataSource, isXlSX, "SELECT * FROM [" + table + "]" +
-                (!String.IsNullOrWhiteSpace(where) || where != null ? " WHERE " + where : ""));
+            return ToDataSet(DataSource);
         }
         public static System.Data.DataTable Select(string DataSource, string table, string where)
         {
-            return Select(DataSource, true, table, where);
+            return ToDataTable(DataSource, "SELECT * FROM [" + table + "]" +
+                (!String.IsNullOrWhiteSpace(where) || where != null ? " WHERE " + where : ""));
         }
         public static System.Data.DataTable Select(string DataSource, string table)
         {
-            return Select(DataSource, true, table, null);
+            return Select(DataSource, table, null);
         }
         public static System.Data.DataTable Select(string table)
         {
-            return Select(DataSource, true, table, null);
+            return Select(DataSource, table, null);
         }
         public static System.Data.DataTable SelectWhere(string table, string where)
         {
-            return Select(DataSource, true, table, where);
-        }
-        public static System.Data.DataTable GetSchemaTable(string DataSource, bool isXlSX, object[] restrictions)
-        {
-            try
-            {
-                return Connection(DataSource, isXlSX).GetOleDbSchemaTable(OleDbSchemaGuid.Tables, restrictions);
-            }
-            catch (Exception) { throw; }
+            return Select(DataSource, table, where);
         }
         public static System.Data.DataTable GetSchemaTable(string DataSource, object[] restrictions)
         {
-            return GetSchemaTable(DataSource, true, restrictions);
-        }
-        public static System.Data.DataTable GetSchemaTable(string DataSource, bool isXlSX)
-        {
-            return GetSchemaTable(DataSource, isXlSX, null);
+            try
+            {
+                return Connection(DataSource).GetOleDbSchemaTable(OleDbSchemaGuid.Tables, restrictions);
+            }
+            catch (Exception) { throw; }
         }
         public static System.Data.DataTable GetSchemaTable(string DataSource)
         {
-            return GetSchemaTable(DataSource, true, null);
+            return GetSchemaTable(DataSource, null);
         }
         public static System.Data.DataTable GetSchemaTable()
         {
-            return GetSchemaTable(DataSource, true, null);
+            return GetSchemaTable(DataSource, null);
         }
-        public static string[] GetTableName(string DataSource, bool isXlSX, object[] restrictions)
+        public static string[] GetTableName(string DataSource, object[] restrictions)
         {
             try
             {
                 string rs = "";
-                foreach (System.Data.DataRow dr in GetSchemaTable(DataSource, isXlSX, restrictions).Rows)
+                foreach (System.Data.DataRow dr in GetSchemaTable(DataSource, restrictions).Rows)
                     rs += dr["TABLE_NAME"].ToString() + ",";
                 return rs.Substring(0, rs.Length - 1).Split(',');
             }
             catch (Exception) { throw; }
         }
-        public static string[] GetTableName(string DataSource, bool isXlSX)
-        {
-            return GetTableName(DataSource, isXlSX, null);
-        }
-        public static string[] GetTableName(string DataSource, object[] restrictions)
-        {
-            return GetTableName(DataSource, true, restrictions);
-        }
         public static string[] GetTableName(string DataSource)
         {
-            return GetTableName(DataSource, true, null);
+            return GetTableName(DataSource, null);
         }
         public static string[] GetTableName()
         {
-            return GetTableName(DataSource, true, null);
+            return GetTableName(DataSource, null);
         }
-        public static System.Collections.Generic.List<string> GetTableNameList(string DataSource, bool isXlSX, object[] restrictions)
+        public static System.Collections.Generic.List<string> GetTableNameList(string DataSource, object[] restrictions)
         {
             try
             {
                 System.Collections.Generic.List<string> lst = new System.Collections.Generic.List<string>();
-                foreach (System.Data.DataRow dr in GetSchemaTable(DataSource, isXlSX, restrictions).Rows)
+                foreach (System.Data.DataRow dr in GetSchemaTable(DataSource, restrictions).Rows)
                     lst.Add(dr["TABLE_NAME"].ToString());
                 return lst;
             }
             catch (Exception) { throw; }
         }
-        public static System.Collections.Generic.List<string> GetTableNameList(string DataSource, bool isXlSX)
-        {
-            return GetTableNameList(DataSource, isXlSX, null);
-        }
-        public static System.Collections.Generic.List<string> GetTableNameList(string DataSource, object[] restrictions)
-        {
-            return GetTableNameList(DataSource, true, restrictions);
-        }
         public static System.Collections.Generic.List<string> GetTableNameList(string DataSource)
         {
-            return GetTableNameList(DataSource, true, null);
+            return GetTableNameList(DataSource, null);
         }
         public static System.Collections.Generic.List<string> GetTableNameList()
         {
-            return GetTableNameList(DataSource, true, null);
+            return GetTableNameList(DataSource, null);
         }
     }
 }
