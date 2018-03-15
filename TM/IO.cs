@@ -2,7 +2,7 @@
 //using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using TM;
+using TM.Helper;
 
 namespace TM.IO
 {
@@ -19,6 +19,10 @@ namespace TM.IO
         public static string MapPath()
         {
             return MapPath("~/");
+        }
+        public static string RootPartition()
+        {
+            return MapPath().Split('\\')[0];
         }
         public static System.Collections.Generic.Dictionary<string, object> Upload(System.Web.HttpFileCollectionBase HttpFileCollectionBase, string DataSource, bool Rename, string[] Extension, int MaxFileCount)
         {
@@ -498,7 +502,8 @@ namespace TM.IO
 
             // Alternative outputs:
             // ToArray is the cleaner and easiest to use correctly with the penalty of duplicating allocated memory.
-            byte[] byteArrayOut = outputMemStream.ToArray();
+
+            //byte[] byteArrayOut = outputMemStream.ToArray();
 
             // GetBuffer returns a raw buffer raw and so you need to account for the true length yourself.
             //byte[] byteArrayOut = outputMemStream.GetBuffer();
@@ -685,21 +690,29 @@ public static class IOS
     {
         return ToExtension(file).Trim('.');
     }
-    public static bool IsExtension(this string file, string Extension)
+    public static bool IsExtension(this string file, string Extension = null)
     {
         try
         {
-            if (file.ToExtension().ToLower() == (Extension[0].ToString() == "." ? Extension.ToLower() : "." + Extension.ToLower()))
+            if (string.IsNullOrEmpty(Extension))
+                return false;
+            var tmp = Extension.Trim().Trim(',').Split(',').ToLower();
+            if (Array.IndexOf(tmp, Path.GetExtension(file).ToLower()) > -1)
                 return true;
-            else return false;
+            return false;
         }
         catch (Exception) { throw; }
     }
     public static bool IsExtension(this string file, string[] Extension)
     {
-        if (Extension.Length > 0)
-            foreach (var item in Extension)
-                if (file.IsExtension(item)) return true;
+        if (Extension.Length > 0 && Array.IndexOf(Extension.ToLower(), Path.GetExtension(file).ToLower()) > -1)
+            return true;
+        return false;
+    }
+    public static bool IsExtension(this string file, System.Collections.Generic.List<string> Extension)
+    {
+        if (Extension.Count > 0 && Extension.ToLower().Contains(Path.GetExtension(file).ToLower()))
+            return true;
         return false;
     }
     public static System.Collections.Generic.List<string> UploadFileSource(this System.Collections.Generic.Dictionary<string, object> Upload)

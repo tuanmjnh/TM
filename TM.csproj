@@ -30,20 +30,24 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Dapper, Version=1.50.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\Vinaphone\packages\Dapper.1.50.2\lib\net451\Dapper.dll</HintPath>
+    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\Vinaphone\packages\EntityFramework.6.0.0\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\Vinaphone\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\Vinaphone\packages\EntityFramework.6.0.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\Vinaphone\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>..\packages\Microsoft.Office.Interop.Excel.15.0.4795.1000\lib\net20\Microsoft.Office.Interop.Excel.dll</HintPath>
+      <HintPath>..\Vinaphone\packages\Microsoft.Office.Interop.Excel.15.0.4795.1000\lib\net20\Microsoft.Office.Interop.Excel.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.SqlServer.ConnectionInfo, Version=14.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.SqlServer.Smo, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Program Files\Microsoft SQL Server\100\SDK\Assemblies\Microsoft.SqlServer.Smo.dll</HintPath>
@@ -95,14 +99,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\Auth.cs" />
-    <Compile Include="Common\Connection.cs" />
     <Compile Include="Common\Object.cs" />
     <Compile Include="Common\Language.cs" />
     <Compile Include="Common\Config.cs" />
+    <Compile Include="Connection\OleExcel.cs" />
+    <Compile Include="Connection\OleDBF.cs" />
+    <Compile Include="Connection\Oracle.cs" />
+    <Compile Include="Connection\SQLServer.cs" />
+    <Compile Include="DapperCRUD.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TM\AnonymousData.cs" />
     <Compile Include="TM\NumberToLeter.cs" />
+    <Compile Include="TM\TMHelperClass.cs" />
     <Compile Include="TM\TMHelperConvertCharacter.cs" />
     <Compile Include="TM\ExcelWriter.cs" />
     <Compile Include="TM\TMHelperData.cs" />
@@ -124,7 +132,7 @@
     <Compile Include="TM\TMIpAddress.cs" />
     <Compile Include="TM\TMMetaTags.cs" />
     <Compile Include="TM\TMPage.cs" />
-    <Compile Include="TM\TMRegex.cs" />
+    <Compile Include="TM\TMHelperRegex.cs" />
     <Compile Include="TM\TMResizeImage.cs" />
     <Compile Include="TM\TMSqldb.cs" />
     <Compile Include="TM\TMUrl.cs" />

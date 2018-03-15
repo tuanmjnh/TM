@@ -4,6 +4,7 @@ using System.Data.Sql;
 using System.Data.SqlClient;
 using System.Linq;
 using Oracle.ManagedDataAccess.Client;
+using Microsoft.SqlServer.Management.Common;
 //using System.Data.OracleClient;
 
 namespace TM.SQL
@@ -1040,11 +1041,13 @@ namespace TM.SQLServer
             _connectionString = connectionString;
             _path = path;
         }
-        public bool Backing(string database)
+        public bool Backing(string database, SqlConnection connection)
         {
             try
             {
-                var localServer = new Microsoft.SqlServer.Management.Smo.Server();
+                var ServerConnection = new ServerConnection(connection);
+                //var Server = new Microsoft.SqlServer.Management.Smo.Server();
+                var Server = new Microsoft.SqlServer.Management.Smo.Server(ServerConnection);
                 var bkpDBFullWithCompression = new Microsoft.SqlServer.Management.Smo.Backup();
                 /* Specify whether you want to back up database or files or log */
                 bkpDBFullWithCompression.Action = Microsoft.SqlServer.Management.Smo.BackupActionType.Database;
@@ -1052,34 +1055,30 @@ namespace TM.SQLServer
                 bkpDBFullWithCompression.Database = database;
                 /* You can use back up compression technique of SQL Server 2008,
                  * specify CompressionOption property to On for compressed backup */
-                bkpDBFullWithCompression.CompressionOption = Microsoft.SqlServer.Management.Smo.BackupCompressionOptions.On;
-                bkpDBFullWithCompression.Devices.AddDevice(_path + database + "_" + DateTime.Now.ToString("yyyyMMdd") + ".bak", Microsoft.SqlServer.Management.Smo.DeviceType.File);
+                if (Server.Name != "(localdb)\\MSSQLLocalDB")
+                    bkpDBFullWithCompression.CompressionOption = Microsoft.SqlServer.Management.Smo.BackupCompressionOptions.On;
+                bkpDBFullWithCompression.Devices.AddDevice($"{_path}{database}_{DateTime.Now.ToString("yyyyMMdd")}_{Guid.NewGuid()}.bak", Microsoft.SqlServer.Management.Smo.DeviceType.File);
                 bkpDBFullWithCompression.BackupSetName = database + " database Backup - Compressed";
                 bkpDBFullWithCompression.BackupSetDescription = database + " database - Full Backup with Compressin - only in SQL Server 2008";
-                bkpDBFullWithCompression.SqlBackup(localServer);
+                bkpDBFullWithCompression.SqlBackup(Server);
                 return true;
             }
             catch (Exception) { throw; }
         }
-        public bool BackingAll()
+        public bool BackingAll(SqlConnection connection)
         {
             try
             {
-                foreach (string databaseName in GetAllUserDatabases())
-                    Backing(databaseName);
+                foreach (string databaseName in GetAllUserDatabases(connection))
+                    Backing(databaseName, connection);
                 return true;
             }
             catch (Exception) { throw; }
         }
-        public System.Collections.Generic.IEnumerable<string> GetAllUserDatabases()
+        public System.Collections.Generic.IEnumerable<string> GetAllUserDatabases(SqlConnection connection)
         {
             var databases = new System.Collections.Generic.List<String>();
-            DataTable databasesTable;
-            using (var connection = TM.SQL.DBStatic.Connection(_connectionString))
-            {
-                databasesTable = connection.GetSchema("Databases");
-                connection.Close();
-            }
+            var databasesTable = connection.GetSchema("Databases");
             foreach (DataRow row in databasesTable.Rows)
             {
                 string databaseName = row["database_name"].ToString();
@@ -1108,66 +1107,5 @@ namespace TM.SQLServer
             string filename = string.Format("{0}-{1}.bak", databaseName, DateTime.Now.ToString("yyyy-MM-dd"));
             return System.IO.Path.Combine(_path, filename);
         }
-    }
-}
-namespace TM.DataAcess
-{
-    public class Oracle
-    {
-        private string _UserId, _Password, _DataSource, _Host, _Port, _Service_Name;
-        public Oracle() { }
-        public static OracleConnection OracleConnection(ConnectionInf conInf)
-        {
-            string _con = $"User Id={conInf.UserId};Password={conInf.Password};Data Source={conInf.DataSource};";
-            OracleConnection conn = new OracleConnection(_con);  // C#
-            if (conn.State == ConnectionState.Open) conn.Close();
-            conn.Open();
-            return conn;
-        }
-        public static OracleConnection OracleConnection(ConnectionServerInf conSVInf)
-        {
-            string _con = $"User Id={conSVInf.UserId};Password={conSVInf.Password};Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={conSVInf.Host})(PORT={conSVInf.Port}))(CONNECT_DATA=(SERVICE_NAME={conSVInf.Service_Name})));";
-            OracleConnection conn = new OracleConnection(_con);  // C#
-            if (conn.State == ConnectionState.Open) conn.Close();
-            conn.Open();
-            return conn;
-        }
-        public Oracle(ConnectionInf conInf)
-        {
-            _UserId = conInf.UserId;
-            _Password = conInf.Password;
-            _DataSource = conInf.DataSource;
-        }
-        public Oracle(ConnectionServerInf conInf)
-        {
-            _UserId = conInf.UserId;
-            _Password = conInf.Password;
-            _Host = conInf.Host;
-            _Port = conInf.Port;
-            _Service_Name = conInf.Service_Name;
-        }
-        public OracleConnection OracleConnection(bool server = false)
-        {
-            string _con = !server ?
-                $"User Id={_UserId};Password={_Password};Data Source={_DataSource};" :
-                $"User Id={_UserId};Password={_Password};Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={_Host})(PORT={_Port}))(CONNECT_DATA=(SERVICE_NAME={_Service_Name})));";
-            OracleConnection conn = new OracleConnection(_con);  // C#
-            conn.Open();
-            return conn;
-        }
-    }
-    public class ConnectionInf
-    {
-        public string UserId { get; set; }
-        public string Password { get; set; }
-        public string DataSource { get; set; }
-    }
-    public class ConnectionServerInf
-    {
-        public string UserId { get; set; }
-        public string Password { get; set; }
-        public string Host { get; set; }
-        public string Port { get; set; }
-        public string Service_Name { get; set; }
     }
 }

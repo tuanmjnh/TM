@@ -81,7 +81,7 @@ namespace TM.Helper
                 int t = 0;
                 if (str != string.Empty)
                     for (int i = 0; i < str.Length; i++)
-                        t += RE.RegEx.isNumber(str.Substring(i, 1)) ? Convert.ToInt32(str.Substring(i, 1)) : 0;
+                        t += str.Substring(i, 1).isNumber() ? Convert.ToInt32(str.Substring(i, 1)) : 0;
                 return t;
             }
             catch (Exception) { throw; }
@@ -428,6 +428,24 @@ namespace TM.Helper
         {
             for (int i = 0; i < ls.Length; i++)
                 ls[i] = ls[i].ToUpper();
+            return ls;
+        }
+        public static string[] ToLower(this string[] ls)
+        {
+            for (int i = 0; i < ls.Length; i++)
+                ls[i] = ls[i].ToLower();
+            return ls;
+        }
+        public static System.Collections.Generic.List<string> ToUpper(this System.Collections.Generic.List<string> ls, object obj = null)
+        {
+            for (int i = 0; i < ls.Count; i++)
+                ls[i] = ls[i].ToUpper();
+            return ls;
+        }
+        public static System.Collections.Generic.List<string> ToLower(this System.Collections.Generic.List<string> ls, object obj = null)
+        {
+            for (int i = 0; i < ls.Count; i++)
+                ls[i] = ls[i].ToLower();
             return ls;
         }
     }

@@ -139,56 +139,157 @@ namespace TM.Helper
             //put a breakpoint here and check datatable
             return dataTable;
         }
-        public static List<T> ToList<T>(this IDataReader dr)
+
+        //public static List<T> ToList<T>(this DataTable dt)
+        //{
+        //    List<T> data = new List<T>();
+        //    foreach (DataRow row in dt.Rows)
+        //    {
+        //        T item = GetItem<T>(row);
+        //        data.Add(item);
+        //    }
+        //    return data;
+        //}
+        //private static T GetItem<T>(DataRow dr)
+        //{
+        //    Type temp = typeof(T);
+        //    T obj = Activator.CreateInstance<T>();
+
+        //    foreach (DataColumn column in dr.Table.Columns)
+        //    {
+        //        foreach (var pro in temp.GetProperties())
+        //        {
+        //            if (pro.Name == column.ColumnName)
+        //                pro.SetValue(obj, dr[column.ColumnName], null);
+        //            else
+        //                continue;
+        //        }
+        //    }
+        //    return obj;
+        //}
+
+        public static List<T> ToList<T>(this DataTable dt, string FormatDateTime = null)
         {
-            List<T> list = new List<T>();
-            T obj = default(T);
-            while (dr.Read())
+            List<T> data = new List<T>();
+            foreach (DataRow row in dt.Rows)
             {
-                obj = Activator.CreateInstance<T>();
-                foreach (System.Reflection.PropertyInfo prop in obj.GetType().GetProperties())
-                    if (!object.Equals(dr[prop.Name], DBNull.Value))
-                        prop.SetValue(obj, dr[prop.Name], null);
-                list.Add(obj);
+                T item = GetItem<T>(row, FormatDateTime);
+                data.Add(item);
             }
-            return list;
+            return data;
         }
-        public static List<T> ToList2<T>(this DataTable table) where T : class, new()
+        private static T GetItem<T>(DataRow dr, string FormatDateTime = null)
         {
-            try
+            Type temp = typeof(T);
+            T obj = Activator.CreateInstance<T>();
+
+            foreach (DataColumn column in dr.Table.Columns)
             {
-                List<T> list = new List<T>();
-                foreach (var row in table.AsEnumerable())
+                foreach (var pro in temp.GetProperties())
                 {
-                    T obj = new T();
-                    foreach (var prop in obj.GetType().GetProperties())
+                    //in case you have a enum/GUID datatype in your model
+                    //We will check field's dataType, and convert the value in it.
+                    if (pro.Name == column.ColumnName)
                     {
                         try
                         {
-                            System.Reflection.PropertyInfo propertyInfo = obj.GetType().GetProperty(prop.Name);
-                            propertyInfo.SetValue(obj, Convert.ChangeType(row[prop.Name], propertyInfo.PropertyType), null);
+                            var convertedValue = GetValueByDataType(pro.PropertyType, dr[column.ColumnName], FormatDateTime);
+                            pro.SetValue(obj, convertedValue, null);
                         }
-                        catch { continue; }
+                        catch (Exception e)
+                        {
+                            //ex handle code                   
+                            throw;
+                        }
+                        //pro.SetValue(obj, dr[column.ColumnName], null);
                     }
-                    list.Add(obj);
+                    else
+                        continue;
                 }
-                return list;
             }
-            catch { return null; }
+            return obj;
         }
-        public static List<T> ToList3<T>(this DataTable dt)
+        private static object GetValueByDataType(Type propertyType, object o, string FormatDateTime = null)
         {
-            const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance;
-            var columnNames = dt.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToList();
-            var objectProperties = typeof(T).GetProperties(flags);
-            var targetList = dt.AsEnumerable().Select(dataRow =>
+            var provider = System.Globalization.CultureInfo.InvariantCulture;
+            if (o.ToString() == "null" || string.IsNullOrEmpty(o.ToString()))
             {
-                var instanceOfT = Activator.CreateInstance<T>();
-                foreach (var properties in objectProperties.Where(properties => columnNames.Contains(properties.Name) && dataRow[properties.Name] != DBNull.Value))
-                    properties.SetValue(instanceOfT, dataRow[properties.Name], null);
-                return instanceOfT;
-            }).ToList();
-            return targetList;
+                return null;
+            }
+            if (propertyType == (typeof(Guid)) || propertyType == typeof(Guid?))
+            {
+                return Guid.Parse(o.ToString());
+            }
+            else if (propertyType == typeof(int) || propertyType.IsEnum)
+            {
+                return Convert.ToInt32(o);
+            }
+            else if (propertyType == typeof(decimal))
+            {
+                return Convert.ToDecimal(o);
+            }
+            else if (propertyType == typeof(long))
+            {
+                return Convert.ToInt64(o);
+            }
+            else if (propertyType == typeof(bool) || propertyType == typeof(bool?))
+            {
+                return Convert.ToBoolean(o);
+            }
+            else if (propertyType == typeof(DateTime) || propertyType == typeof(DateTime?))
+            {
+                if (FormatDateTime != null)
+                    return DateTime.ParseExact(o.ToString(), FormatDateTime, provider);
+                else
+                    return Convert.ToDateTime(o);
+            }
+            return o.ToString();
+        }
+
+        public static T Trim<T>(this T item)
+        {
+            var properties = typeof(T).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+            foreach (var p in properties)
+            {
+                if (p.PropertyType != typeof(string) || !p.CanWrite || !p.CanRead) { continue; }
+                var value = p.GetValue(item) as string;
+                if (value != null)
+                    p.SetValue(item, value.Trim());
+            }
+            return item;
+        }
+        public static List<T> Trim<T>(this List<T> collection)
+        {
+            foreach (var item in collection) Trim(item);
+            return collection;
+        }
+        public static IEnumerable<T> Trim<T>(this IEnumerable<T> collection)
+        {
+            foreach (var item in collection) Trim(item);
+            return collection;
+        }
+        //Fix Date FoxPro
+        public static T FixDateFoxPro<T>(this T item)
+        {
+            var properties = typeof(T).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+            foreach (var p in properties)
+            {
+                if (p.PropertyType != typeof(DateTime?) || !p.CanWrite || !p.CanRead) { continue; }
+                var value = (DateTime?)p.GetValue(item);
+                if (value != null && value.Value.ToString("yyyy/MM/dd") == "1899/12/30" && value.Value.Year < 9999)
+                    p.SetValue(item, null);
+            }
+            return item;
+        }
+        public static List<T> FixDateFoxPro<T>(this List<T> collection)
+        {
+            foreach (var item in collection) FixDateFoxPro(item);
+            return collection;
+        }
+        public static IEnumerable<T> FixDateFoxPro<T>(this IEnumerable<T> collection)
+        {
+            foreach (var item in collection) FixDateFoxPro(item);
+            return collection;
         }
     }
     public static class Dictionary

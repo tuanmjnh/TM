@@ -19,12 +19,12 @@ namespace TM.Common
         public const string document = data + "Document\\";
         public const string orther = Uploads + "Orther\\";
         public const string ccbs = data + "ccbs\\";
-        public const string DBBak = Uploads + "DBBak\\";
         public const string CA = document + "CA\\";
         public const string IVAN = document + "IVAN\\";
         public const string KTR = document + "KTR\\";
         public const string TraSauReport = data + "Report\\";
         public const string Hopdong = Uploads + "Hopdong\\";
+        public static string DBBak { get { return $"{TM.IO.FileDirectory.RootPartition()}\\Drive\\DBBak\\"; } }
     }
 }
 namespace TM.Common.Objects

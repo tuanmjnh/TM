@@ -1,65 +1,65 @@
 ﻿using System;
 
-namespace TM.RE
+namespace TM.Helper
 {
-    public static class RegEx
+    public static class Regex
     {
-        public static bool isEmpty(string s)
+        public static bool isEmpty(this string s)
         {
             if (s == string.Empty) return true;
             else return false;
         }
-        public static bool isNumber(string s)
+        public static bool isNumber(this string s)
         {
             if (!isEmpty(s))
                 if (System.Text.RegularExpressions.Regex.IsMatch(s, @"^[0-9]+$")) return true;
                 else return false;
             else return false;
         }
-        public static bool isDecimal(string s)
+        public static bool isDecimal(this string s)
         {
             if (!isEmpty(s))
                 if (System.Text.RegularExpressions.Regex.IsMatch(s, @"^[0-9]*\.?[0-9]+$")) return true;
                 else return false;
             else return false;
         }
-        public static bool isEmail(string s)
+        public static bool isEmail(this string s)
         {
             if (!isEmpty(s))
                 if (System.Text.RegularExpressions.Regex.IsMatch(s, @"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*")) return true;
                 else return false;
             else return false;
         }
-        public static bool isPhone(string s)
+        public static bool isPhone(this string s)
         {
             if (!isEmpty(s))
                 if (System.Text.RegularExpressions.Regex.IsMatch(s, @"\d{9,15}")) return true;
                 else return false;
             else return false;
         }
-        public static bool isMatch(string s, string x)
+        public static bool isMatch(this string s, string x)
         {
             if (!isEmpty(s) && !isEmpty(x))
                 if (s == x) return true;
                 else return false;
             else return false;
         }
-        public static bool isBiger(int one, int two)
+        public static bool isBiger(this int one, int two)
         {
             if (one > two) return true;
             else return false;
         }
-        public static bool isSmaller(int one, int two)
+        public static bool isSmaller(this int one, int two)
         {
             if (one < two) return true;
             else return false;
         }
-        public static bool isBiger(decimal one, decimal two)
+        public static bool isBiger(this decimal one, decimal two)
         {
             if (one > two) return true;
             else return false;
         }
-        public static bool isSmaller(decimal one, decimal two)
+        public static bool isSmaller(this decimal one, decimal two)
         {
             if (one < two) return true;
             else return false;
