@@ -54,15 +54,15 @@ namespace TM
         {
             return RedirectContinue(BaseUrl);
         }
-        public static string RedirectContinue(string url)
+        public static string RedirectContinue(string url, bool ajaxRequest = false)
         {
-            if (HttpContext.Current.Request.QueryString["continue"] != null)
-            {
-                string query = HttpContext.Current.Request.Url.Query;
+            var rs = BaseUrl;
+            if (ajaxRequest)
+                rs = url != null ? $"{rs}/{url.Replace("?continue=", "")}" : rs;
+            else
                 //HttpContext.Current.Response.Redirect(urlDecode(query.Replace("?continue=", "")));
-                return urlDecode(query.Replace("?continue=", ""));
-            }
-            return url; //HttpContext.Current.Response.Redirect(url);
+                rs = HttpContext.Current.Request.QueryString["continue"] != null ? urlDecode(HttpContext.Current.Request.Url.Query.Replace("?continue=", "")) : BaseUrl;
+            return rs; //HttpContext.Current.Response.Redirect(url);
         }
         public static string ContinueUrl()
         {
