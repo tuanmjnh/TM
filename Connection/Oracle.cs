@@ -11,7 +11,7 @@ namespace TM.Connection
 {
     public class Oracle
     {
-        private string _connectionString = "HNIVNPTBACKAN1";
+        private string _connectionString = "TTKD_BKN";
         public OracleConnection Connection;
         //public SQLServer()
         //{

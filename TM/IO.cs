@@ -527,7 +527,7 @@ namespace TM.IO
                 if (!File.Exists(IsMapPath ? TM.IO.FileDirectory.MapPath(c) : c))
                     throw new ArgumentException(string.Format("The File {0} does not exist!", c));
 
-            var crc32 = new ICSharpCode.SharpZipLib.Checksums.Crc32();
+            var crc32 = new ICSharpCode.SharpZipLib.Checksum.Crc32();
             var stream = new ICSharpCode.SharpZipLib.Zip.ZipOutputStream(File.Create(outFile));
             stream.SetLevel(compression);
 
